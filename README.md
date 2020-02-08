@@ -16,13 +16,13 @@ It is written in Typescript and uses the [Puppeteer browser automation framework
 
 [Node.js](https://nodejs.org/) must be installed.
 
-First, install the dependencies:
+For the first use, install the dependencies with the Node Package Manager:
 
 `> npm install`
 
-Then:
+Then, run the locally installed Typescript runtime with the name of the script, followed by arguments:
 
-`> ts-node sign.ts <path to the extension folder>`
+`> ./node_modules/.bin/ts-node sign.ts <path to the extension folder>`
 
 ## Extension Warehouse authentication
 
@@ -31,15 +31,15 @@ The script requires authentication credentials in order to log into the Extensio
 If none are provided, the script will prompt the user for a username and a password.
 To avoid this interruption, you can provide the credentials via the command-line:
 
-`> ts-node sign.ts my_extension --username USERNAME --password PASSWORD`
+`> ./node_modules/.bin/ts-node sign.ts my_extension --username <your username> --password <your password>`
 
 Alternatively, when no manual input is preferred, the script can fetch the credentials from a [dotenv](https://github.com/motdotla/dotenv#readme) file when the `--env` option is specified:
 
-`> ts-node sign.ts my_extension --env`
+`> ./node_modules/.bin/ts-node sign.ts my_extension --env`
 
 It expects the `.env` file to define the `EW_USERNAME` and `EW_PASSWORD` variables.
 For convenience, you can rename and modify `.env.example`.
 
 ## Help
 
-`> ts-node sign.ts --help` for more info
+`> ./node_modules/.bin/ts-node sign.ts --help` for more info

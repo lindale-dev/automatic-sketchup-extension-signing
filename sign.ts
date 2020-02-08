@@ -200,7 +200,7 @@ async function sign(zipPath: string, username: string, password: string) : Promi
 
     download(downloadUrl, '.', { filename: outputName })
         .then(() => console.log(`Downloaded to "${outputName}"`))
-        .catch(reason => console.log(`DOwnload failed! ${reason}`));
+        .catch(reason => console.log(`Download failed! ${reason}`));
 
     await browser.close();
 

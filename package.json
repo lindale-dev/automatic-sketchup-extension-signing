@@ -6,7 +6,6 @@
   },
   "devDependencies": {
     "@types/archiver": "^3.0.0",
-    "@types/dotenv": "^8.2.0",
     "@types/download": "^6.2.4",
     "@types/prompts": "^2.0.3",
     "@types/puppeteer": "^2.0.0",

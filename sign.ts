@@ -22,6 +22,10 @@ const argv = yargs.command('$0 <path>', 'Automatically zip and sign a SketchUp e
             describe: 'Extension Warehouse password (will be prompted for if not provided and --env is not specified)',
             type: 'string',
             default: ''
+        },
+        'output': {
+            describe: 'Path to download the signed extension to',
+            type: 'string'
         }
     })
     .group(['env', 'username', 'password'], 'Authentication')
@@ -147,7 +151,7 @@ async function zip() : Promise<string>
 import * as download from 'download';
 import * as puppeteer from 'puppeteer';
 
-async function sign(zipPath: string, username: string, password: string) : Promise<void>
+async function sign(zipPath: string, username: string, password: string, output: string) : Promise<void>
 {
     console.info('Starting the signing process...');
 
@@ -198,11 +202,25 @@ async function sign(zipPath: string, username: string, password: string) : Promi
 
     const outputName = `${path.parse(zipPath).name}_signed.rbz`;
 
-    download(downloadUrl, '.', { filename: outputName })
-        .then(() => console.log(`Downloaded to "${outputName}"`))
-        .catch(reason => console.log(`Download failed! ${reason}`));
+    try
+    {
+        await download(downloadUrl, '.', { filename: outputName });
+    }
+    catch
+    {
+        console.error(`Download failed!`);
+    }
+
+    console.info(`Downloaded to "${outputName}"`);
 
     await browser.close();
+
+    // Move the download file to the output path if required
+
+    if (output)
+    {
+        fs.renameSync(outputName, output);
+    }
 
     return null;
 };
@@ -213,7 +231,7 @@ async function main()
 {
     let [username, password] = await getCredentials();
     let zipPath = await zip();
-    await sign(zipPath, username, password);
+    await sign(zipPath, username, password, argv.output as string);
 }
 
 main();

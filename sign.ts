@@ -9,9 +9,8 @@ const argv = yargs.command('$0 <path>', 'Automatically zip and sign a SketchUp e
     })
     .options({
         'env': {
-            describe: 'Look for a dotenv file that contains the EW_USERNAME and EW_PASSWORD fields',
-            type: 'boolean',
-            default: false
+            describe: 'Path to a dotenv file that contains the EW_USERNAME and EW_PASSWORD fields ("--env" without path will look in the current working dir)',
+            type: 'string'
         },
         'username': {
             describe: 'Extension Warehouse username (will be prompted for if not provided and --env is not specified)',
@@ -41,6 +40,7 @@ const argv = yargs.command('$0 <path>', 'Automatically zip and sign a SketchUp e
 
 import { config } from 'dotenv';
 import * as prompts from 'prompts';
+import 'path';
 
 async function getCredentials() : Promise<[string, string]>
 {
@@ -51,9 +51,16 @@ async function getCredentials() : Promise<[string, string]>
 
     // Look for the .env credentials if --env has been specified
 
-    if (argv.env)
+    if (argv.env !== undefined)
     {
-        const envFound = config();
+        // "--env" without path: just use the CWD
+        // "--env <path>": load the custom dotenv file
+
+        const envPath = (argv.env as string).length > 0 ?
+            argv.env as string :
+            '.env';
+
+        const envFound = config({path: envPath as string});
 
         if (envFound.error)
         {

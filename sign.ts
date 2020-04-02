@@ -168,7 +168,7 @@ async function search(targetName: string, page: puppeteer.Page, selector: string
     }
     catch (e)
     {
-        console.error(`cannot find element: ${e}`);
+        console.error(`cannot find ${targetName}: ${e}`);
         process.exit(1);
     }
 }

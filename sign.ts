@@ -158,6 +158,21 @@ async function zip() : Promise<string>
 import * as download from 'download';
 import * as puppeteer from 'puppeteer';
 
+async function search(targetName: string, page: puppeteer.Page, selector: string) : Promise<puppeteer.ElementHandle>
+{
+    console.log(`Searching ${targetName}...`);
+
+    try
+    {
+        return await page.waitFor(selector, {visible: true});
+    }
+    catch (e)
+    {
+        console.error(`cannot find element: ${e}`);
+        process.exit(1);
+    }
+}
+
 async function sign(zipPath: string, username: string, password: string, output: string) : Promise<void>
 {
     console.info('Starting the signing process...');
@@ -167,42 +182,44 @@ async function sign(zipPath: string, username: string, password: string, output:
     const page = await browser.newPage();
     await page.goto('https://extensions.sketchup.com/extension/sign', {waitUntil: 'networkidle0'});
 
+    page.setDefaultTimeout(30000);
+
     // Sign in
 
-    const signinButton = await page.waitFor('.intro-section button', {visible: true});
+    const signinButton = await search('sign in button', page, '.intro-section button');
     await signinButton.click();
 
-    const emailIntput = await page.waitFor('input[id=email]', {visible: true});
+    const emailIntput = await search('e-mail input', page, 'input[id=email]');
     await emailIntput.type(username);
     await page.click('input[id=next]');
 
-    const passwordInput = await page.waitFor('input[id=password]', {visible: true});
+    const passwordInput = await search('password input', page, 'input[id=password]');
     await passwordInput.type(password);
     await page.click('input[id=submit]');
 
     // Upload
 
-    const signButton = await page.waitFor('.intro-section button', {visible: true});
+    const signButton = await search('sign button', page, '.intro-section button');
     await signButton.click();
 
-    await page.waitFor(5000); // We have to wait a bit or the next step fails
+    await page.waitFor(10000); // We have to wait a bit or the next step fails
 
-    const browseButton = await page.waitFor('label[for=file]', {visible: true});
+    const browseButton = await search('browse button', page, 'label[for=file]');
     const [fileChooser] = await Promise.all([
         page.waitForFileChooser(),
         browseButton.click()
     ]);
     await fileChooser.accept([zipPath]);
 
-    const nextButton = await page.waitFor('.md-modal:nth-child(1) button.primary', {visible: true});
+    const nextButton = await search('next button 1', page, '.md-modal:nth-child(1) button.primary');
     await nextButton.click();
 
-    const nextButton2 = await page.waitFor('.md-modal:nth-child(2) button.primary', {visible: true});
+    const nextButton2 = await search('next button 2', page, '.md-modal:nth-child(2) button.primary');
     await nextButton2.click();
 
     // Download
 
-    const downloadButton = await page.waitFor('a.link-button')
+    const downloadButton = await search('download link', page, 'a.link-button')
     const downloadUrl = await downloadButton.evaluate(a => (a as HTMLLinkElement).href);
 
     console.log(`Downloading ${downloadUrl}...`);

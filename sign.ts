@@ -25,6 +25,11 @@ const argv = yargs.command('$0 <path>', 'Automatically zip and sign a SketchUp e
         'output': {
             describe: 'Path to download the signed extension to',
             type: 'string'
+        },
+        headless: {
+            describe: 'Run in headless mode without showing the browser',
+            type: 'boolean',
+            default: false
         }
     })
     .group(['env', 'username', 'password'], 'Authentication')
@@ -177,7 +182,7 @@ async function sign(zipPath: string, username: string, password: string, output:
 {
     console.info('Starting the signing process...');
 
-    const browser = await puppeteer.launch({headless: false, slowMo: 10});
+    const browser = await puppeteer.launch({headless: (argv.headless as boolean), slowMo: 10});
 
     const page = await browser.newPage();
     await page.goto('https://extensions.sketchup.com/extension/sign', {waitUntil: 'networkidle0'});

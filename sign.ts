@@ -30,6 +30,11 @@ const argv = yargs.command('$0 <path>', 'Automatically zip and sign a SketchUp e
             describe: 'Run in headless mode without showing the browser',
             type: 'boolean',
             default: false
+        },
+        timeout: {
+            describe: 'The process will fail after this timeout if nothing happens (in milliseconds)',
+            type: 'number',
+            default: 60000
         }
     })
     .group(['env', 'username', 'password'], 'Authentication')
@@ -187,7 +192,7 @@ async function sign(zipPath: string, username: string, password: string, output:
     const page = await browser.newPage();
     await page.goto('https://extensions.sketchup.com/extension/sign', {waitUntil: 'networkidle0'});
 
-    page.setDefaultTimeout(30000);
+    page.setDefaultTimeout(argv.timeout as number);
 
     // Sign in
 

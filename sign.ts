@@ -253,6 +253,13 @@ async function sign(zipPath: string, username: string, password: string, output:
 
     if (output)
     {
+        const outputDir = path.dirname(output);
+
+        if (!fs.existsSync(outputDir))
+        {
+            fs.mkdirSync(outputDir);
+        }
+
         fs.renameSync(outputName, output);
     }
 

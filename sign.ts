@@ -115,7 +115,7 @@ import * as archiver from 'archiver';
 import * as fs from 'fs';
 import * as path from 'path';
 
-async function zip() : Promise<string>
+async function zip(output: string) : Promise<string>
 {
     // Check that provided path exists and that it points to a folder
 
@@ -146,17 +146,13 @@ async function zip() : Promise<string>
         throw error;
     });
 
-    const zipPath = `extension_${new Date().getTime()}.zip`;
-    const file = fs.createWriteStream(zipPath);
+    const rbzPath = `${path.join(path.dirname(output), path.parse(output).name)}_not_signed.rbz`;
+
+    const file = fs.createWriteStream(rbzPath);
     archive.pipe(file);
 
     archive.directory(argv.path as string, false);
     archive.finalize();
-
-    // Rename to rbz
-
-    const rbzPath = `${path.parse(zipPath).name}.rbz`;
-    fs.renameSync(zipPath, rbzPath);
 
     console.info(`The extension has been archived in "${rbzPath}"`);
 
@@ -183,7 +179,7 @@ async function search(targetName: string, page: puppeteer.Page, selector: string
     }
 }
 
-async function sign(zipPath: string, username: string, password: string, output: string) : Promise<void>
+async function sign(rbzPath: string, username: string, password: string) : Promise<void>
 {
     console.info('Starting the signing process...');
 
@@ -219,7 +215,7 @@ async function sign(zipPath: string, username: string, password: string, output:
         page.waitForFileChooser(),
         browseButton.click()
     ]);
-    await fileChooser.accept([zipPath]);
+    await fileChooser.accept([rbzPath]);
 
     const nextButton = await search('next button 1', page, '.md-modal:nth-child(1) button.primary');
     await nextButton.click();
@@ -234,34 +230,20 @@ async function sign(zipPath: string, username: string, password: string, output:
 
     console.log(`Downloading ${downloadUrl}...`);
 
-    const outputName = `${path.parse(zipPath).name}_signed.rbz`;
+    const outputPath = path.join(path.dirname(rbzPath), `${path.basename(rbzPath, '_not_signed.rbz')}_signed.rbz`);
 
     try
     {
-        await download(downloadUrl, '.', { filename: outputName });
+        await download(downloadUrl, path.dirname(outputPath), { filename: path.basename(outputPath) });
     }
     catch
     {
         console.error(`Download failed!`);
     }
 
-    console.info(`Downloaded to "${outputName}"`);
+    console.info(`Downloaded to "${outputPath}"`);
 
     await browser.close();
-
-    // Move the download file to the output path if required
-
-    if (output)
-    {
-        const outputDir = path.dirname(output);
-
-        if (!fs.existsSync(outputDir))
-        {
-            fs.mkdirSync(outputDir);
-        }
-
-        fs.renameSync(outputName, output);
-    }
 
     return null;
 };
@@ -270,9 +252,25 @@ async function sign(zipPath: string, username: string, password: string, output:
 
 async function main()
 {
+    // Create the output directory
+
+    const output = argv.output as string;
+
+    if (output)
+    {
+        const outputDir = path.dirname(output);
+
+        if (!fs.existsSync(outputDir))
+        {
+            fs.mkdirSync(outputDir, { recursive: true });
+        }
+    }
+
+    // Run
+
     let [username, password] = await getCredentials();
-    let zipPath = await zip();
-    await sign(zipPath, username, password, argv.output as string);
+    let rbzPath = await zip(output);
+    await sign(rbzPath, username, password);
 }
 
 main();

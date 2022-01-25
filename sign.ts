@@ -195,13 +195,18 @@ async function sign(rbzPath: string, username: string, password: string) : Promi
     const signinButton = await search('sign in button', page, '.intro-section button');
     await signinButton.click();
 
-    const emailIntput = await search('e-mail input', page, 'input[id=email]');
+    const emailIntput = await search('e-mail input', page, 'input[name=username]');
     await emailIntput.type(username);
-    await page.click('input[id=next]');
+    await page.waitFor(5000); // Wait a bit or the field validation won't work (maybe some JS need to run first?)
+    await emailIntput.evaluate(e => (e as HTMLElement).blur()); // Blur the input or the button will stay disabled
+    const submitUsernameButton = await search('username submit button', page, 'button[name="username-submit"]')
+    await submitUsernameButton.click();
 
-    const passwordInput = await search('password input', page, 'input[id=password]');
+    const passwordInput = await search('password input', page, 'input[name=password]');
     await passwordInput.type(password);
-    await page.click('input[id=submit]');
+    await passwordInput.evaluate(e => (e as HTMLElement).blur());
+    const submitPasswordButton = await search('password submit button', page, 'button[name="password-submit"]')
+    await submitPasswordButton.click();
 
     // Upload
 

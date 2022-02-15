@@ -8,23 +8,24 @@ const argv = yargs.command('$0 <path>', 'Automatically zip and sign a SketchUp e
         type: 'string'
     })
     .options({
-        'env': {
+        env: {
             describe: 'Path to a dotenv file that contains the EW_USERNAME and EW_PASSWORD fields ("--env" without path will look in the current working dir)',
             type: 'string'
         },
-        'username': {
+        username: {
             describe: 'Extension Warehouse username (will be prompted for if not provided and --env is not specified)',
             type: 'string',
             default: '',
         },
-        'password': {
+        password: {
             describe: 'Extension Warehouse password (will be prompted for if not provided and --env is not specified)',
             type: 'string',
             default: ''
         },
-        'output': {
+        output: {
             describe: 'Path to download the signed extension to',
-            type: 'string'
+            type: 'string',
+            demandOption: true
         },
         headless: {
             describe: 'Run in headless mode without showing the browser',

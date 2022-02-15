@@ -159,7 +159,7 @@ async function zip(output: string) : Promise<string>
     return rbzPath;
 }
 
-/* Log in, upload and download the signed extension */
+/* Log in, upload the unsigned extension and download the signed version */
 
 import * as download from 'download';
 import * as puppeteer from 'puppeteer';
@@ -170,7 +170,7 @@ async function search(targetName: string, page: puppeteer.Page, selector: string
 
     try
     {
-        return await page.waitFor(selector, {visible: true});
+        return await page.waitForSelector(selector, {visible: true});
     }
     catch (e)
     {
@@ -197,7 +197,7 @@ async function sign(rbzPath: string, username: string, password: string) : Promi
 
     const emailIntput = await search('e-mail input', page, 'input[name=username]');
     await emailIntput.type(username);
-    await page.waitFor(5000); // Wait a bit or the field validation won't work (maybe some JS need to run first?)
+    await page.waitForTimeout(5000); // Wait a bit or the field validation won't work (maybe some JS need to run first?)
     await emailIntput.evaluate(e => (e as HTMLElement).blur()); // Blur the input or the button will stay disabled
     const submitUsernameButton = await search('username submit button', page, 'button[name="username-submit"]')
     await submitUsernameButton.click();
@@ -213,7 +213,7 @@ async function sign(rbzPath: string, username: string, password: string) : Promi
     const signButton = await search('sign button', page, '.intro-section button');
     await signButton.click();
 
-    await page.waitFor(10000); // We have to wait a bit or the next step fails
+    await page.waitForTimeout(10000); // We have to wait a bit or the next step fails
 
     const browseButton = await search('browse button', page, 'label[for=file]');
     const [fileChooser] = await Promise.all([

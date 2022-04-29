@@ -1,64 +1,64 @@
-import * as yargs from "yargs";
+import * as yargs from 'yargs';
 
 const argv = yargs
   .command(
-    "$0 <path>",
-    "Automatically zip and sign a SketchUp extension via the Extension Warehouse web interface.",
+    '$0 <path>',
+    'Automatically zip and sign a SketchUp extension via the Extension Warehouse web interface.',
     (yargs) => {
       yargs
-        .positional("path", {
+        .positional('path', {
           describe:
-            "Path to the folder that contains the extension (must contain an [extension].rb file and an [extension] folder)",
+            'Path to the folder that contains the extension (must contain an [extension].rb file and an [extension] folder)',
           demandOption: true,
-          type: "string",
+          type: 'string',
         })
         .options({
           env: {
             describe:
               'Path to a dotenv file that contains the EW_USERNAME and EW_PASSWORD fields ("--env" without path will look in the current working dir)',
-            type: "string",
+            type: 'string',
           },
           username: {
             describe:
-              "Extension Warehouse username (will be prompted for if not provided and --env is not specified)",
-            type: "string",
-            default: "",
+              'Extension Warehouse username (will be prompted for if not provided and --env is not specified)',
+            type: 'string',
+            default: '',
           },
           password: {
             describe:
-              "Extension Warehouse password (will be prompted for if not provided and --env is not specified)",
-            type: "string",
-            default: "",
+              'Extension Warehouse password (will be prompted for if not provided and --env is not specified)',
+            type: 'string',
+            default: '',
           },
           output: {
-            describe: "Path to download the signed extension to",
-            type: "string",
+            describe: 'Path to download the signed extension to',
+            type: 'string',
             demandOption: true,
           },
           headless: {
-            describe: "Run in headless mode without showing the browser",
-            type: "boolean",
+            describe: 'Run in headless mode without showing the browser',
+            type: 'boolean',
             default: false,
           },
           timeout: {
             describe:
-              "The process will fail after this timeout if nothing happens (in milliseconds)",
-            type: "number",
+              'The process will fail after this timeout if nothing happens (in milliseconds)',
+            type: 'number',
             default: 60000,
           },
         })
-        .group(["env", "username", "password"], "Authentication")
+        .group(['env', 'username', 'password'], 'Authentication')
         .example(
-          "$0 my_extension",
-          "Will require manual username and password input"
+          '$0 my_extension',
+          'Will require manual username and password input'
         )
         .example(
-          "$0 my_extension --username user@name.com",
-          "Will require manual password input"
+          '$0 my_extension --username user@name.com',
+          'Will require manual password input'
         )
         .example(
-          "$0 my_extension --env",
-          "will use the credentials stored in a dotenv file, no manual input"
+          '$0 my_extension --env',
+          'will use the credentials stored in a dotenv file, no manual input'
         );
     }
   )
@@ -67,9 +67,9 @@ const argv = yargs
 
 /* Retrieve the Extension Warehouse credentials to use */
 
-import { config } from "dotenv";
-import * as prompts from "prompts";
-import "path";
+import { config } from 'dotenv';
+import * as prompts from 'prompts';
+import 'path';
 
 async function getCredentials(): Promise<[string, string]> {
   // Use the credentials provided via the CLI by default (could be undefined)
@@ -84,7 +84,7 @@ async function getCredentials(): Promise<[string, string]> {
     // "--env <path>": load the custom dotenv file
 
     const envPath =
-      (argv.env as string).length > 0 ? (argv.env as string) : ".env";
+      (argv.env as string).length > 0 ? (argv.env as string) : '.env';
 
     const envFound = config({ path: envPath as string });
 
@@ -95,12 +95,12 @@ async function getCredentials(): Promise<[string, string]> {
       process.exit(1);
     } else if (!process.env.EW_USERNAME) {
       console.error(
-        "Specified --env option but the EW_USERNAME variable is missing"
+        'Specified --env option but the EW_USERNAME variable is missing'
       );
       process.exit(1);
     } else if (!process.env.EW_PASSWORD) {
       console.error(
-        "`Specified --env option but the EW_PASSWORD variable is missing"
+        'Specified --env option but the EW_PASSWORD variable is missing'
       );
       process.exit(1);
     } else {
@@ -114,9 +114,9 @@ async function getCredentials(): Promise<[string, string]> {
   if (!username) {
     username = await (
       await prompts({
-        type: "text",
-        name: "username",
-        message: "Extension Warehouse username",
+        type: 'text',
+        name: 'username',
+        message: 'Extension Warehouse username',
       })
     ).username;
   }
@@ -124,9 +124,9 @@ async function getCredentials(): Promise<[string, string]> {
   if (!password) {
     password = await (
       await prompts({
-        type: "password",
-        name: "password",
-        message: "Extension Warehouse password",
+        type: 'password',
+        name: 'password',
+        message: 'Extension Warehouse password',
       })
     ).password;
   }
@@ -136,9 +136,9 @@ async function getCredentials(): Promise<[string, string]> {
 
 /* Zip the extension's files */
 
-import * as archiver from "archiver";
-import * as fs from "fs";
-import * as path from "path";
+import * as archiver from 'archiver';
+import * as fs from 'fs';
+import * as path from 'path';
 
 async function zip(output: string): Promise<string> {
   // Check that provided path exists and that it points to a folder
@@ -155,17 +155,17 @@ async function zip(output: string): Promise<string> {
 
   // Create the archive
 
-  const archive = archiver("zip");
+  const archive = archiver('zip');
 
-  archive.on("warning", (error) => {
-    if (error.code === "ENOENT") {
+  archive.on('warning', (error) => {
+    if (error.code === 'ENOENT') {
       console.warn(`Error while preparing the archive: ${error.message}`);
     } else {
       throw error;
     }
   });
 
-  archive.on("error", (error) => {
+  archive.on('error', (error) => {
     throw error;
   });
 
@@ -187,14 +187,27 @@ async function zip(output: string): Promise<string> {
 
 /* Log in, upload the unsigned extension and download the signed version */
 
-import * as download from "download";
-import * as puppeteer from "puppeteer";
+import * as download from 'download';
+import { ElementHandle, Frame, Page } from 'puppeteer';
+import puppeteer, { PuppeteerExtra } from 'puppeteer-extra';
+import recaptcha from 'puppeteer-extra-plugin-recaptcha';
+
+puppeteer.use(
+  recaptcha({
+    provider: {
+      id: '2captcha',
+      token: 'XXXXXXX'
+    },
+    visualFeedback: true,
+    throwOnError: true
+  })
+);
 
 async function search(
   targetName: string,
-  page: puppeteer.Page,
+  page: Page,
   selector: string
-): Promise<puppeteer.ElementHandle> {
+): Promise<ElementHandle> {
   console.log(`Searching ${targetName}...`);
 
   try {
@@ -210,16 +223,22 @@ async function sign(
   username: string,
   password: string
 ): Promise<void> {
-  console.info("Starting the signing process...");
+  console.info('Starting the signing process...');
 
   const browser = await puppeteer.launch({
     headless: argv.headless as boolean,
     slowMo: 10,
+    args: [
+      '--no-sandbox',
+      '--disable-web-security',
+      '--disable-features=IsolateOrigins,site-per-process,SitePerProcess',
+      '--flag-switches-begin --disable-site-isolation-trials --flag-switches-end'
+    ]
   });
 
   const page = await browser.newPage();
-  await page.goto("https://extensions.sketchup.com/extension/sign", {
-    waitUntil: "networkidle0",
+  await page.goto('https://extensions.sketchup.com/extension/sign', {
+    waitUntil: 'networkidle0',
   });
 
   page.setDefaultTimeout(argv.timeout as number);
@@ -227,36 +246,54 @@ async function sign(
   // Sign in
 
   const signinButton = await search(
-    "sign in button",
+    'sign in button',
     page,
-    ".intro-section button"
+    '.intro-section button'
   );
   await signinButton.click();
 
   const emailIntput = await search(
-    "e-mail input",
+    'e-mail input',
     page,
-    "input[name=username]"
+    'input[name=username]'
   );
   await emailIntput.type(username);
   await page.waitForTimeout(5000); // Wait a bit or the field validation won't work (maybe some JS need to run first?)
   await emailIntput.evaluate((e) => (e as HTMLElement).blur()); // Blur the input or the button will stay disabled
   const submitUsernameButton = await search(
-    "username submit button",
+    'username submit button',
     page,
     'button[name="username-submit"]'
   );
   await submitUsernameButton.click();
 
+  // A captcha appears at this point since march 2022
+  // let frame = await (await page.waitForSelector('iframe[src*="captcha"]', {timeout:5000})).contentFrame();
+
+  // await frame.solveRecaptchas()
+
+  /*let a = await page.findRecaptchas();
+console.log(a)
+  for (const frame of page.mainFrame().childFrames()) {
+    let a = await frame.findRecaptchas();
+    console.log(a)
+    await frame.solveRecaptchas()
+  }*/
+  await page.waitForTimeout(5000);
+  for (const frame of page.mainFrame().childFrames()) {
+    let x = await frame.findRecaptchas()
+    console.log(x)
+  }
+
   const passwordInput = await search(
-    "password input",
+    'password input',
     page,
-    "input[name=password]"
+    'input[name=password]'
   );
   await passwordInput.type(password);
   await passwordInput.evaluate((e) => (e as HTMLElement).blur());
   const submitPasswordButton = await search(
-    "password submit button",
+    'password submit button',
     page,
     'button[name="password-submit"]'
   );
@@ -264,12 +301,12 @@ async function sign(
 
   // Upload
 
-  const signButton = await search("sign button", page, ".intro-section button");
+  const signButton = await search('sign button', page, '.intro-section button');
   await signButton.click();
 
   await page.waitForTimeout(10000); // We have to wait a bit or the next step fails
 
-  const browseButton = await search("browse button", page, "label[for=file]");
+  const browseButton = await search('browse button', page, 'label[for=file]');
   const [fileChooser] = await Promise.all([
     page.waitForFileChooser(),
     browseButton.click(),
@@ -277,22 +314,22 @@ async function sign(
   await fileChooser.accept([rbzPath]);
 
   const nextButton = await search(
-    "next button 1",
+    'next button 1',
     page,
-    ".md-modal:nth-child(1) button.primary"
+    '.md-modal:nth-child(1) button.primary'
   );
   await nextButton.click();
 
   const nextButton2 = await search(
-    "next button 2",
+    'next button 2',
     page,
-    ".md-modal:nth-child(2) button.primary"
+    '.md-modal:nth-child(2) button.primary'
   );
   await nextButton2.click();
 
   // Download
 
-  const downloadButton = await search("download link", page, "a.link-button");
+  const downloadButton = await search('download link', page, 'a.link-button');
   const downloadUrl = await downloadButton.evaluate(
     (a) => (a as HTMLLinkElement).href
   );
@@ -301,7 +338,7 @@ async function sign(
 
   const outputPath = path.join(
     path.dirname(rbzPath),
-    `${path.basename(rbzPath, "_not_signed.rbz")}_signed.rbz`
+    `${path.basename(rbzPath, '_not_signed.rbz')}_signed.rbz`
   );
 
   try {

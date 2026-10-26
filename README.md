@@ -1,3 +1,6 @@
+> [!WARNING]
+> This tool cannot work anymore, as extension signing is now gated behind [Trimble's account interface](https://forums.sketchup.com/t/sign-a-rbz-requiring-trimble-id-log-in-from-a-script/82424), which requires to solve a captcha.
+
 # Automatic SketchUp Extension Signing
 
 SketchUp extensions [must be signed before publication](https://help.sketchup.com/en/extension-warehouse/extension-encryption-and-signing).
@@ -6,6 +9,7 @@ While relatively quick, this process has to be conducted manually.
 This makes it impractical for developers to integrate the signing step in an automated build pipeline.
 
 This script automates the signing process and performs the following steps:
+
 - Archive the extension into an `rbz` file
 - Log into the Extension Warehouse
 - Upload the extension and download the signed version
